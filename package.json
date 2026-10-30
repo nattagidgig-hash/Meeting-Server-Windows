@@ -1,0 +1,12 @@
+{
+  "name": "meeting-server",
+  "private": true,
+  "description": "Development runner for the Meeting Server web UI (FastAPI backend + static web/ assets).",
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "dev:web": "bun run scripts/dev.ts --web-only"
+  },
+  "engines": {
+    "bun": ">=1.1.0"
+  }
+}

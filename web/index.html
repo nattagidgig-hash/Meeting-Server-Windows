@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0B5B4A">
+<title>Meeting Server • ประชุมองค์กร</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปที่เนื้อหาหลัก</a>
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><svg class="i i-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg></span>
+      <span class="brand-text"><strong>Meeting Server</strong><small>ถอดเสียงและสรุปประชุมภายในองค์กร</small></span>
+    </div>
+    <nav class="appbar-actions" aria-label="บัญชีและผู้ดูแลระบบ">
+      <button id="api-status" class="api-pill" type="button" hidden aria-live="polite" title="สถานะการเชื่อมต่อ Claude API">
+        <span class="dot" aria-hidden="true"></span><span id="api-status-text">API</span>
+      </button>
+      <button id="api-settings" class="btn btn-quiet" type="button" hidden>
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M18.727 14.727a1.5 1.5 0 0 0 .3 1.655l.055.054a1.816 1.816 0 0 1 0 2.573 1.818 1.818 0 0 1-2.573 0l-.055-.055a1.5 1.5 0 0 0-1.654-.3 1.5 1.5 0 0 0-.91 1.373v.155a1.818 1.818 0 1 1-3.636 0V20.1a1.5 1.5 0 0 0-.981-1.373 1.5 1.5 0 0 0-1.655.3l-.054.055a1.818 1.818 0 0 1-3.106-1.287 1.818 1.818 0 0 1 .533-1.286l.054-.055a1.5 1.5 0 0 0 .3-1.654 1.5 1.5 0 0 0-1.372-.91h-.155a1.818 1.818 0 1 1 0-3.636H3.9a1.5 1.5 0 0 0 1.373-.981 1.5 1.5 0 0 0-.3-1.655l-.055-.054A1.818 1.818 0 1 1 7.491 4.99l.054.054a1.5 1.5 0 0 0 1.655.3h.073a1.5 1.5 0 0 0 .909-1.372v-.155a1.818 1.818 0 0 1 3.636 0V3.9a1.499 1.499 0 0 0 .91 1.373 1.5 1.5 0 0 0 1.654-.3l.054-.055a1.817 1.817 0 0 1 2.573 0 1.819 1.819 0 0 1 0 2.573l-.055.054a1.5 1.5 0 0 0-.3 1.655v.073a1.5 1.5 0 0 0 1.373.909h.155a1.818 1.818 0 0 1 0 3.636H20.1a1.499 1.499 0 0 0-1.373.91Z"/></svg>
+        ตั้งค่า Claude API
+      </button>
+      <button id="logout" class="btn btn-outline" type="button" hidden>
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 17 5-5m0 0-5-5m5 5H9m0-9H7.8c-1.68 0-2.52 0-3.162.327a3 3 0 0 0-1.311 1.311C3 5.28 3 6.12 3 7.8v8.4c0 1.68 0 2.52.327 3.162a3 3 0 0 0 1.311 1.311C5.28 21 6.12 21 7.8 21H9"/></svg>
+        ออกจากระบบ
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div id="notice" class="toast" role="status" aria-live="polite"></div>
+
+<main id="main" class="shell">
+
+  <section id="login" class="auth">
+    <div class="auth-card">
+      <p class="eyebrow">ระบบประชุมองค์กร</p>
+      <h1>เข้าสู่ระบบ</h1>
+      <p class="lead">ใช้บัญชีที่ผู้ดูแลเซิร์ฟเวอร์สร้างให้เท่านั้น</p>
+      <form id="login-form" class="stack" novalidate>
+        <p id="login-error" class="field-error" role="alert"></p>
+        <div class="field">
+          <label for="username">ชื่อผู้ใช้</label>
+          <input id="username" name="username" autocomplete="username" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label for="password">รหัสผ่าน</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">
+          เข้าสู่ระบบ
+          <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-7-7m7 7-7 7"/></svg>
+        </button>
+      </form>
+      <p class="hint">ไฟล์ประชุมถูกเก็บไว้บนเครื่องเซิร์ฟเวอร์ขององค์กร ไม่ได้ส่งออกโดยอัตโนมัติ</p>
+    </div>
+  </section>
+
+  <section id="dashboard" hidden aria-labelledby="dash-title">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">พื้นที่ทำงาน</p>
+        <h1 id="dash-title">งานประชุมของคุณ</h1>
+        <p id="session-info" class="meta"></p>
+      </div>
+    </div>
+
+    <div class="workspace">
+      <aside class="panel upload-panel" aria-labelledby="upload-h">
+        <div class="panel-head">
+          <h2 id="upload-h">เพิ่มไฟล์ประชุม</h2>
+        </div>
+        <p class="hint">ไฟล์เสียงหรือวิดีโอจะถูกส่งมายังเครื่องเซิร์ฟเวอร์ขององค์กร การถอดเสียงไม่ส่งไฟล์ไปบริการ AI ภายนอก</p>
+        <form id="upload-form" class="stack">
+          <div class="field">
+            <label for="title">ชื่อการประชุม</label>
+            <input id="title" name="title" maxlength="180" placeholder="เช่น ประชุมคณะกรรมการบริหาร ครั้งที่ 4/2569">
+          </div>
+          <div class="field">
+            <span class="label">ไฟล์ต้นฉบับ</span>
+            <label class="dropzone" id="dropzone" for="audio">
+              <svg class="i i-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 16 4-4m0 0 4 4m-4-4v9m8-4.257A5.5 5.5 0 0 0 16.5 7a.62.62 0 0 1-.534-.302 7.5 7.5 0 1 0-11.78 9.096"/></svg>
+              <span class="dropzone-title">เลือกไฟล์เสียงหรือวิดีโอ</span>
+              <span class="dropzone-sub">หรือลากไฟล์มาวาง • MP3 WAV M4A MP4 AAC OGG FLAC WEBM WMA</span>
+              <input id="audio" name="audio" type="file" accept=".mp3,.wav,.m4a,.mp4,.aac,.ogg,.flac,.webm,.wma" class="visually-hidden">
+            </label>
+            <p id="file-name" class="meta"></p>
+          </div>
+          <button id="upload-button" class="btn btn-primary btn-block" type="submit">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 16 4-4m0 0 4 4m-4-4v9m8-4.257A5.5 5.5 0 0 0 16.5 7a.62.62 0 0 1-.534-.302 7.5 7.5 0 1 0-11.78 9.096"/></svg>
+            อัปโหลดและเข้าคิวถอดเสียง
+          </button>
+          <p id="upload-state" class="hint" role="status" aria-live="polite"></p>
+        </form>
+      </aside>
+
+      <section class="panel list-panel" aria-labelledby="jobs-h">
+        <div class="list-head">
+          <div>
+            <h2 id="jobs-h">รายการงาน</h2>
+            <p id="jobs-summary" class="hint"></p>
+          </div>
+          <button id="refresh" class="btn btn-quiet" type="button">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10s-2.005-2.732-3.634-4.362a9 9 0 1 0 2.282 8.862M21 10V4m0 6h-6"/></svg>
+            รีเฟรช
+          </button>
+        </div>
+        <div class="toolbar">
+          <div class="search">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-3.5-3.5m2.5-6a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0Z"/></svg>
+            <input id="search" type="search" placeholder="ค้นหาชื่องาน" aria-label="ค้นหาชื่องาน" autocomplete="off">
+          </div>
+          <div id="filters" class="chips" role="group" aria-label="กรองตามสถานะ">
+            <button class="chip is-active" type="button" data-filter="all" aria-pressed="true">ทั้งหมด</button>
+            <button class="chip" type="button" data-filter="active" aria-pressed="false">กำลังดำเนินการ</button>
+            <button class="chip" type="button" data-filter="review" aria-pressed="false">รอตรวจ</button>
+            <button class="chip" type="button" data-filter="approved" aria-pressed="false">อนุมัติแล้ว</button>
+            <button class="chip" type="button" data-filter="failed" aria-pressed="false">ล้มเหลว</button>
+          </div>
+        </div>
+        <div id="jobs" class="jobs" aria-busy="true" aria-live="polite"></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="detail" hidden aria-labelledby="job-title">
+    <button id="back" class="btn btn-quiet btn-back" type="button">
+      <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m0 0 7 7m-7-7 7-7"/></svg>
+      กลับรายการงาน
+    </button>
+
+    <div class="job-head">
+      <h1 id="job-title"></h1>
+      <div class="job-head-meta">
+        <span id="job-status" class="chip"></span>
+        <span id="job-updated" class="meta"></span>
+      </div>
+      <div id="job-progress" class="progress progress-lg" role="progressbar" aria-label="ความคืบหน้า" hidden><span></span></div>
+    </div>
+
+    <p id="job-error" class="banner banner-danger"></p>
+    <p id="unsaved" class="banner banner-warn" hidden>มีการแก้ไขที่ยังไม่ได้บันทึก ระบบจะไม่โหลดทับจนกว่าคุณจะบันทึกหรือออกจากหน้านี้</p>
+
+    <ol class="stepper" aria-label="ขั้นตอนการทำงาน">
+      <li data-step="transcript"><span class="step-num">1</span><span class="step-text"><strong>ตรวจข้อความ</strong><small>ชื่อ ตัวเลข มติ</small></span></li>
+      <li data-step="report"><span class="step-num">2</span><span class="step-text"><strong>ตรวจรายงาน</strong><small>แก้ถ้อยคำให้ตรงต้นฉบับ</small></span></li>
+      <li data-step="export"><span class="step-num">3</span><span class="step-text"><strong>อนุมัติและส่งออก</strong><small>Word, ข้อความ, JSON</small></span></li>
+    </ol>
+
+    <div class="editor-grid">
+      <section class="panel editor" aria-labelledby="transcript-h">
+        <div class="panel-head">
+          <h2 id="transcript-h">1. ข้อความถอดเสียง</h2>
+          <span id="transcript-count" class="meta"></span>
+        </div>
+        <p class="hint">ตรวจชื่อคน ตัวเลข และมติสำคัญก่อนกดสรุป การแก้ในช่องนี้ไม่ทับข้อความต้นฉบับ</p>
+        <textarea id="transcript" rows="16" aria-label="ข้อความถอดเสียง" spellcheck="false"></textarea>
+        <div id="cloud-box" class="consent" hidden>
+          <label class="check">
+            <input type="checkbox" id="cloud-consent">
+            <span>ฉันได้รับอนุญาตให้ส่งข้อความในช่องนี้ไปสรุปด้วย Anthropic API ตามนโยบายองค์กรแล้ว</span>
+          </label>
+        </div>
+        <p id="mode-note" class="hint"></p>
+        <div class="actions">
+          <button id="save-transcript" class="btn btn-outline" type="button">บันทึกข้อความตรวจแล้ว</button>
+          <button id="summarize" class="btn btn-primary" type="button">
+            สรุปด้วยสกิลที่กำหนด
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-7-7m7 7-7 7"/></svg>
+          </button>
+          <button id="retry" class="btn btn-outline" type="button" hidden>
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10s-2.005-2.732-3.634-4.362a9 9 0 1 0 2.282 8.862M21 10V4m0 6h-6"/></svg>
+            ลองถอดเสียงใหม่
+          </button>
+          <a id="download-transcript" class="btn btn-quiet" download>
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v1.2c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C18.72 21 17.88 21 16.2 21H7.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C3 18.72 3 17.88 3 16.2V15m14-5-5 5m0 0-5-5m5 5V3"/></svg>
+            ต้นฉบับ .txt
+          </a>
+        </div>
+      </section>
+
+      <section class="panel editor" id="report-box" hidden aria-labelledby="report-h">
+        <div class="panel-head">
+          <h2 id="report-h">2. ร่างรายงาน</h2>
+          <span id="report-state" class="chip"></span>
+        </div>
+        <p class="hint">AI ไม่ได้อนุมัติเอกสารแทนคน การแก้รายงานที่อนุมัติแล้วจะเปลี่ยนกลับเป็นฉบับร่าง</p>
+        <textarea id="report" rows="20" aria-label="ร่างรายงานประชุม" spellcheck="false"></textarea>
+        <div class="actions">
+          <button id="save-report" class="btn btn-outline" type="button">บันทึกฉบับร่าง</button>
+          <button id="approve" class="btn btn-primary" type="button">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            ยืนยันว่าตรวจและอนุมัติแล้ว
+          </button>
+        </div>
+
+        <div class="deliver">
+          <h3>ส่งออกเอกสาร</h3>
+          <div class="tiles">
+            <a id="download-docx" class="tile" download>
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 11H8m2 4H8m8-8H8m12-.2v10.4c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C17.72 22 16.88 22 15.2 22H8.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C4 19.72 4 18.88 4 17.2V6.8c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C6.28 2 7.12 2 8.8 2h6.4c1.68 0 2.52 0 3.162.327a3 3 0 0 1 1.311 1.311C20 4.28 20 5.12 20 6.8Z"/></svg>
+              <strong>Word</strong><small>.docx</small>
+            </a>
+            <a id="download-doc" class="tile" download>
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12.5V6.8c0-1.68 0-2.52-.327-3.162a3 3 0 0 0-1.311-1.311C17.72 2 16.88 2 15.2 2H8.8c-1.68 0-2.52 0-3.162.327a3 3 0 0 0-1.311 1.311C4 4.28 4 5.12 4 6.8v10.4c0 1.68 0 2.52.327 3.162a3 3 0 0 0 1.311 1.311C6.28 22 7.12 22 8.8 22h3.7m2.5-3 3 3m0 0 3-3m-3 3v-6"/></svg>
+              <strong>Word รุ่นเก่า</strong><small>.doc</small>
+            </a>
+            <a id="download-report" class="tile" download>
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2.27V6.4c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437c.214.11.494.11 1.054.11h4.13M14 17H8m8-4H8m12-3.012V17.2c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C17.72 22 16.88 22 15.2 22H8.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C4 19.72 4 18.88 4 17.2V6.8c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C6.28 2 7.12 2 8.8 2h3.212c.733 0 1.1 0 1.446.083.306.073.598.195.867.36.303.185.562.444 1.08.963l3.19 3.188c.518.519.777.778.963 1.081a3 3 0 0 1 .36.867c.082.346.082.712.082 1.446Z"/></svg>
+              <strong>ข้อความ</strong><small>.txt</small>
+            </a>
+            <a id="download-json" class="tile" download>
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18.5c0 .464 0 .697.026.892a3 3 0 0 0 2.582 2.582c.195.026.428.026.892.026h7.7c1.68 0 2.52 0 3.162-.327a3 3 0 0 0 1.311-1.311C21 19.72 21 18.88 21 17.2V9.988c0-.734 0-1.1-.083-1.446a3 3 0 0 0-.36-.867c-.185-.303-.444-.562-.963-1.08l-3.188-3.19c-.519-.518-.778-.777-1.081-.963a3.001 3.001 0 0 0-.867-.36C14.112 2 13.745 2 13.012 2H8.5c-.464 0-.697 0-.892.026a3 3 0 0 0-2.582 2.582C5 4.803 5 5.036 5 5.5m4 9 2.5-2.5L9 9.5m-4 0L2.5 12 5 14.5"/></svg>
+              <strong>JSON</strong><small>ข้อมูลดิบ</small>
+            </a>
+            <button id="print" class="tile" type="button">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5.2c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C16.48 2 15.92 2 14.8 2H9.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C6 3.52 6 4.08 6 5.2V7m0 11c-.93 0-1.395 0-1.776-.102a3 3 0 0 1-2.122-2.121C2 15.395 2 14.93 2 14v-2.2c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C4.28 7 5.12 7 6.8 7h10.4c1.68 0 2.52 0 3.162.327a3 3 0 0 1 1.311 1.311C22 9.28 22 10.12 22 11.8V14c0 .93 0 1.395-.102 1.777a3 3 0 0 1-2.122 2.12C19.395 18 18.93 18 18 18m-3-7.5h3M9.2 22h5.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C18 20.48 18 19.92 18 18.8v-1.6c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C16.48 14 15.92 14 14.8 14H9.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C6 15.52 6 16.08 6 17.2v1.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C7.52 22 8.08 22 9.2 22Z"/></svg>
+              <strong>พิมพ์</strong><small>PDF</small>
+            </button>
+          </div>
+          <p class="hint">ดาวน์โหลดและพิมพ์ข้อมูลฉบับที่บันทึกแล้ว หากแก้ข้อความให้บันทึกก่อน</p>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section id="settings" hidden aria-labelledby="settings-h">
+    <button id="settings-back" class="btn btn-quiet btn-back" type="button">
+      <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m0 0 7 7m-7-7 7-7"/></svg>
+      กลับรายการงาน
+    </button>
+    <div class="page-head">
+      <div>
+        <p class="eyebrow">ผู้ดูแลระบบ</p>
+        <h1 id="settings-h">ตั้งค่า Claude API</h1>
+        <p class="lead">ใช้ Key จาก Claude Console และบัญชีหรือ Workspace ที่องค์กรอนุมัติ</p>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <form id="claude-settings-form" class="panel stack" autocomplete="off">
+        <p id="claude-save-error" class="field-error" role="alert"></p>
+        <div class="api-card" id="api-card" role="status" aria-live="polite" data-state="idle">
+          <span class="dot" aria-hidden="true"></span>
+          <div class="api-card-body">
+            <strong id="api-card-title">ยังไม่ได้ตรวจสอบการเชื่อมต่อ</strong>
+            <small id="api-card-detail">กดตรวจสอบเพื่อยืนยันว่าบัญชีนี้เรียก Claude API ได้จริง</small>
+          </div>
+          <button id="api-check" class="btn btn-outline" type="button">ตรวจสอบการเชื่อมต่อ</button>
+        </div>
+        <div class="panel-head">
+          <h2>เชื่อมต่อบัญชีและโมเดล</h2>
+          <a class="link" href="https://platform.claude.com/settings/keys" target="_blank" rel="noopener noreferrer">เปิด Claude Console</a>
+        </div>
+        <p class="hint">Claude Team กับ API เป็นคนละส่วน ต้องสร้าง API key ใน Console และเชื่อมเครดิต Team ตามเงื่อนไขของแพ็กเกจ</p>
+
+        <div class="field">
+          <label for="claude-api-key">API key</label>
+          <input id="claude-api-key" type="password" autocomplete="off" spellcheck="false" maxlength="1024" placeholder="ใส่ Key ใหม่ หรือเว้นว่างเพื่อใช้ Key ที่บันทึกแล้ว">
+          <p id="claude-key-state" class="hint"></p>
+        </div>
+        <div class="field">
+          <label for="claude-workspace">Workspace ID <small>(ถ้าบัญชีกำหนด)</small></label>
+          <input id="claude-workspace" autocomplete="off" spellcheck="false" maxlength="180" placeholder="wrkspc_...">
+        </div>
+        <div class="row-actions">
+          <button id="claude-test" class="btn btn-outline" type="button">ตรวจ Key และโหลดโมเดล</button>
+          <span class="meta">อ่านเฉพาะรายการโมเดล ไม่ส่งข้อความประชุม</span>
+        </div>
+        <p id="claude-test-result" class="result" role="status" aria-live="polite"></p>
+
+        <div class="field">
+          <label for="claude-model">โมเดลสรุป</label>
+          <input id="claude-model" list="claude-model-list" autocomplete="off" spellcheck="false" maxlength="180" placeholder="ตรวจ Key แล้วเลือก Model ID ที่ได้จากบัญชี">
+          <datalist id="claude-model-list"></datalist>
+        </div>
+
+        <div class="consent">
+          <strong>ข้อความจะออกไปประมวลผลที่ Anthropic</strong>
+          <p>บริการเชิงพาณิชย์ไม่ใช้ข้อมูลฝึกโมเดลโดยค่าเริ่มต้น แต่มีข้อยกเว้นเมื่ออนุญาตหรือส่ง feedback และระยะเก็บข้อมูลต้องตรวจตามบริการ รุ่นโมเดล และข้อตกลงจริง Team ไม่ได้แปลว่า Zero Data Retention</p>
+          <label class="check"><input id="claude-policy" type="checkbox"> <span>องค์กรอนุมัติบัญชี โมเดล ข้อมูลที่ส่ง ระยะเก็บข้อมูล และค่าใช้จ่ายแล้ว</span></label>
+        </div>
+
+        <label class="switch-row">
+          <span><strong>เปิดใช้ Claude API สำหรับการสรุปประชุม</strong><small>ปิดไว้เพื่อใช้โมเดลในเครื่องหรือยังไม่สรุป</small></span>
+          <input id="claude-enabled" type="checkbox" class="switch">
+        </label>
+
+        <div class="actions">
+          <button id="claude-cancel" class="btn btn-quiet" type="button">ยกเลิก</button>
+          <button id="claude-save" class="btn btn-primary" type="submit">บันทึกการตั้งค่า</button>
+        </div>
+      </form>
+
+      <aside class="panel note-panel" aria-label="ข้อควรทราบ">
+        <h2>ข้อควรทราบ</h2>
+        <ul class="notes">
+          <li>เว้นช่อง Key ว่างเพื่อใช้ Key เดิม เมื่อบันทึกแล้วจะไม่ส่ง Key กลับมาแสดง</li>
+          <li>ไม่เก็บ Key ใน localStorage หรือรายการประชุม</li>
+          <li>การตรวจ Key ไม่อ่านเสียงหรือข้อความประชุม และไม่ยืนยันว่าวงเงินสรุปเพียงพอ</li>
+          <li>บน Windows Key เข้ารหัสผูกกับเครื่องด้วย DPAPI และต้องจำกัดสิทธิ์โฟลเดอร์ data</li>
+          <li>หากย้ายเซิร์ฟเวอร์ ให้กรอก Key ใหม่</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section id="print-view" aria-label="รายงานสำหรับพิมพ์"></section>
+</main>
+
+<footer class="site-foot">ไฟล์งานเก็บบน Windows Server เครื่องนี้ • การส่งข้อความออกใช้ได้เฉพาะเมื่อผู้ดูแลเปิด API และผู้ใช้ยืนยันรายงานนั้น</footer>
+<script src="/client.js"></script>
+</body>
+</html>
