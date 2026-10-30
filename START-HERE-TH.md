@@ -45,7 +45,7 @@ powershell -ExecutionPolicy Bypass -File .\Install-All.ps1 -RegisterStartup
 - `-SkipModel` เมื่อคัดลอกโมเดลมาแล้ว • `-OfflineWheels .\wheels` สำหรับเครื่องที่ไม่มีอินเทอร์เน็ต (สร้างชุดออฟไลน์ด้วย `Make-OfflineBundle.ps1`)
 - `-WithDevTools` ติดตั้ง Bun สำหรับ `bun run dev`
 - เครื่องเป้าหมาย Lenovo i5-14400 (10 คอร์/16 เธรด), RAM 16 GB, SSD 512 GB, Windows build 26100 — ระบบตั้งจำนวนเธรด Whisper อัตโนมัติ (สูงสุด 8) และไม่ใช้ Ollama
-- เครื่องนี้ต่อ Wi-Fi ที่ 192.168.1.199 หากให้เครื่องอื่นใน LAN ใช้งาน ต้องรัน Enable-LAN.ps1 พร้อม certificate ขององค์กร และสำรอง IP ให้คงที่
+- เครื่องเซิร์ฟเวอร์ควรสำรอง IP ให้คงที่ หากให้เครื่องอื่นใน LAN ใช้งาน ต้องรัน Enable-LAN.ps1 พร้อม certificate ขององค์กร
 
 ## 1. เตรียมเครื่อง
 
