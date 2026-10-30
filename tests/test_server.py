@@ -153,5 +153,13 @@ class Integration(unittest.TestCase):
     self.assertIn('connected',body);self.assertIn('checked_at',body)
     self.assertNotIn('unit-test-key',r.text)
     self.assertFalse(body['connected'] and body['state']=='disabled')
+    cfg=config();cfg.update(summary_mode='anthropic',summary_model='test-model',cloud_allowed=True);save_config(cfg)
+    with patch('app.server.check_models',return_value={'models':[{'id':'test-model','name':'Test'}],'has_more':False}):
+        ready=self.client.get('/api/admin/claude/status?refresh=1').json()
+        self.assertTrue(ready['connected']);self.assertEqual(ready['state'],'ready');self.assertEqual(ready['model_count'],1)
+    with patch('app.server.check_models',side_effect=ValueError('ตรวจการเชื่อมต่อไม่ผ่าน')):
+        failed=self.client.get('/api/admin/claude/status?refresh=1').json()
+        self.assertFalse(failed['connected']);self.assertEqual(failed['state'],'failed')
+    cfg.update(summary_mode='disabled',summary_model='',cloud_allowed=False);save_config(cfg)
 
 if __name__=='__main__':unittest.main(verbosity=2)
