@@ -9,7 +9,7 @@ def confirmed_password():
     return password
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['init','add-user','reset-password','download-model','summary','check','lan','backup','purge-job'])
+    parser=argparse.ArgumentParser();parser.add_argument('command',choices=['init','add-user','reset-password','download-model','summary','check','lan','backup','purge-job','clear-jobs'])
     parser.add_argument('--cert');parser.add_argument('--key');parser.add_argument('--job');parser.add_argument('--confirm',action='store_true')
     args=parser.parse_args();init();cfg=config()
     if args.command=='init':
@@ -80,6 +80,19 @@ def main():
         with db() as source,sqlite3.connect(folder/'meeting.db') as target:source.backup(target)
         shutil.copytree(DATA/'uploads',folder/'uploads');shutil.copy(DATA/'config.json',folder/'config.json')
         print('Backup created at',folder,'; secrets and model files are not included. Restrict access and copy to approved separate storage.')
+    elif args.command=='clear-jobs':
+        # Start from an empty job list (fresh install / new pilot round).
+        if not args.confirm:raise ValueError('This deletes every meeting record. Use --confirm after backup or policy review.')
+        with db() as c:
+            active=c.execute("SELECT COUNT(*) FROM jobs WHERE state IN ('queued','transcribing','queued_summary','summarizing')").fetchone()[0]
+            if active:raise ValueError('ยังมีงานกำลังประมวลผลอยู่ ปิดเซิร์ฟเวอร์หรือรอให้เสร็จก่อนล้างรายการ')
+            total=c.execute('SELECT COUNT(*) FROM jobs').fetchone()[0]
+            c.execute('DELETE FROM jobs')
+        removed=0
+        for item in (DATA/'uploads').glob('*'):
+            if item.is_file():item.unlink();removed+=1
+        audit('local-operator','cleared_jobs')
+        print(f'ล้างรายการงานแล้ว {total} รายการ และลบไฟล์เสียงใน uploads {removed} ไฟล์')
     elif args.command=='purge-job':
         if not args.confirm or not args.job:raise ValueError('This permanently deletes one meeting. Require --job ID --confirm after policy/backup review.')
         with db() as c:
