@@ -249,6 +249,7 @@ icacls 'C:\MeetingServer\data' /grant "${ServiceAccount}:(OI)(CI)M"
 
 ```powershell
 .\.venv\Scripts\python.exe manage.py purge-job --job รหัสงาน --confirm
+.\.venv\Scripts\python.exe manage.py clear-jobs --confirm
 ```
 
 คำสั่งนี้ลบรายการจากระบบใช้งานและไฟล์เสียง ไม่ลบสำเนาสำรอง และไม่ถือเป็นการรับรองลบข้อมูลแบบกู้คืนทางนิติวิทยาศาสตร์ไม่ได้
