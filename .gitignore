@@ -1,0 +1,10 @@
+data/
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+install-log.txt
+offline-bundle/
+*.zip
+.DS_Store
+.env
