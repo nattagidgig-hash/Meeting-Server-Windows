@@ -4,7 +4,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 temp=tempfile.TemporaryDirectory();os.environ['MEETING_DATA']=temp.name
-from app.core import init, add_user, config, save_config, update_job, db, recover
+from app.core import init, add_user, config, save_config, update_job, db, recover, password_ok, password_hash
 from app.summary import split_text, parse_report
 from app.server import app
 from fastapi.testclient import TestClient
@@ -161,5 +161,23 @@ class Integration(unittest.TestCase):
         failed=self.client.get('/api/admin/claude/status?refresh=1').json()
         self.assertFalse(failed['connected']);self.assertEqual(failed['state'],'failed')
     cfg.update(summary_mode='disabled',summary_model='',cloud_allowed=False);save_config(cfg)
+
+class Bootstrap(unittest.TestCase):
+ """A fresh data directory must always end up with a usable administrator."""
+ def test_01_init_creates_default_admin_once(self):
+    with tempfile.TemporaryDirectory() as folder, patch('app.core.DATA',Path(folder)):
+        self.assertEqual(init(),'Admin')
+        self.assertIsNone(init())
+        with db() as c:rows=c.execute('SELECT name,admin,password FROM users').fetchall()
+        self.assertEqual([(r['name'],r['admin']) for r in rows],[('Admin',1)])
+        self.assertTrue(password_ok('11111111',rows[0]['password']))
+ def test_02_init_keeps_existing_accounts(self):
+    with tempfile.TemporaryDirectory() as folder, patch('app.core.DATA',Path(folder)):
+        init()
+        with db() as c:c.execute("UPDATE users SET password=? WHERE name='Admin'",(password_hash('Changed-password-1'),))
+        self.assertIsNone(init())
+        with db() as c:rows=c.execute('SELECT name,password FROM users').fetchall()
+        self.assertEqual([r['name'] for r in rows],['Admin'])
+        self.assertTrue(password_ok('Changed-password-1',rows[0]['password']))
 
 if __name__=='__main__':unittest.main(verbosity=2)

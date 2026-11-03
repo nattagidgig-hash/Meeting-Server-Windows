@@ -38,6 +38,7 @@ def init():
         columns={row[1] for row in c.execute('PRAGMA table_info(jobs)')}
         if 'summary_revision' not in columns:
             c.execute('ALTER TABLE jobs ADD COLUMN summary_revision INTEGER NOT NULL DEFAULT 0')
+    return bootstrap_default_admin()
 
 MIN_PASSWORD_LENGTH=8
 DEFAULT_ADMIN_USER='Admin'
@@ -57,6 +58,20 @@ def password_ok(value,stored):
 def add_user(name,password,admin=False):
     if not name or len(name)>80 or any(x in name for x in '\r\n'):raise ValueError('ชื่อผู้ใช้ไม่ถูกต้อง')
     with db() as c:c.execute('INSERT INTO users VALUES(?,?,?)',(name,password_hash(password),int(admin)))
+
+def bootstrap_default_admin():
+    # A data directory can reach the server through run.py or a bare `uvicorn`
+    # call as well as `manage.py init`. Without an account every login fails,
+    # so the documented default administrator is created whenever none exists.
+    with db() as c:
+        if c.execute('SELECT COUNT(*) FROM users').fetchone()[0]:return None
+    name=(os.environ.get('MEETING_ADMIN_USER') or DEFAULT_ADMIN_USER).strip() or DEFAULT_ADMIN_USER
+    password=os.environ.get('MEETING_ADMIN_PASSWORD') or DEFAULT_ADMIN_PASSWORD
+    try:add_user(name,password,True)
+    except sqlite3.IntegrityError:return None
+    audit('system','bootstrap_default_admin')
+    print(f'No accounts found: created the default administrator "{name}". Change it now with manage.py reset-password',flush=True)
+    return name
 
 def audit(username,event,job=''):
     with db() as c:c.execute('INSERT INTO audit(at,username,event,job) VALUES(?,?,?,?)',(time.time(),username,event,job))

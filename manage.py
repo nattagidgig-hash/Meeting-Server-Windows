@@ -1,7 +1,7 @@
 from __future__ import annotations
 import argparse, getpass, json, os, shutil, sqlite3, sys, time
 from pathlib import Path
-from app.core import DATA, ROOT, DEFAULT, init, config, save_config, db, add_user, password_hash, audit, DEFAULT_ADMIN_USER, DEFAULT_ADMIN_PASSWORD
+from app.core import DATA, ROOT, DEFAULT, init, config, save_config, db, add_user, password_hash, audit
 
 def confirmed_password():
     password=getpass.getpass('Password (12+ characters, hidden): ')
@@ -11,14 +11,10 @@ def confirmed_password():
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('command',choices=['init','add-user','reset-password','download-model','summary','check','lan','backup','purge-job','clear-jobs'])
     parser.add_argument('--cert');parser.add_argument('--key');parser.add_argument('--job');parser.add_argument('--confirm',action='store_true')
-    args=parser.parse_args();init();cfg=config()
+    args=parser.parse_args();created_admin=init();cfg=config()
     if args.command=='init':
-        with db() as c:count=c.execute('SELECT COUNT(*) FROM users').fetchone()[0]
-        if not count:
-            # Default account so a fresh install can log in immediately.
-            name=os.environ.get('MEETING_ADMIN_USER',DEFAULT_ADMIN_USER).strip() or DEFAULT_ADMIN_USER
-            add_user(name,os.environ.get('MEETING_ADMIN_PASSWORD',DEFAULT_ADMIN_PASSWORD),True)
-            print('Default administrator created:',name)
+        if created_admin:
+            print('Default administrator created:',created_admin)
             print('Initial password is printed in START-HERE-TH.md only, never in the web app.')
             print('Change it now with: manage.py reset-password')
         else:print('Existing configuration and accounts preserved.')
